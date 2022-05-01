@@ -78,6 +78,7 @@ public class Database {
             return null;
         }
         var user = new MqttUser() {
+            id = await reader.GetFieldValueAsync<uint>(0),
             username = reader.GetString(1),
             password = reader.GetString(2),
             is_superuser = reader.GetInt16(3) == 1
@@ -153,6 +154,7 @@ public class Database {
             return null;
         }
         var user = new MqttAcl() {
+            id = await reader.GetFieldValueAsync<uint>(0),
             username = reader.GetString(1),
             access = (Access)reader.GetInt16(2),
             topic = reader.GetString(3)
@@ -173,6 +175,7 @@ public class Database {
             access = (Access)reader.GetInt16(2),
             topic = reader.GetString(3)
         };
+        await reader.CloseAsync();
         return user;
     }
 
