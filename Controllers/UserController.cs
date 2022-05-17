@@ -32,8 +32,8 @@ public class UserController : ControllerBase {
     }
 
     [HttpPost("add")]
-    public async Task<IActionResult> Add([FromForm]MqttUser user) {
-        if (!ModelState.IsValid) return BadRequest();
+    public async Task<IActionResult> Add([FromForm] MqttUser user) {
+        if (!MqttUserIsValid(user)) return BadRequest();
         var id = await db.AddUser(user);
         if (id == 0) return BadRequest();
         return Ok(id);
@@ -59,5 +59,7 @@ public class UserController : ControllerBase {
         return Ok();
     }
 
-    
+    private bool MqttUserIsValid(MqttUser user) {
+        return user.password.Length >= 8;
+    }    
 }

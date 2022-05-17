@@ -12,10 +12,11 @@ public class ApiController : ControllerBase {
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromForm] string username, [FromForm] string password) {
+        if (!PasswordIsValid(password)) return BadRequest();
         var id = await db.AddUser(new MqttUser() {username = username, password = password});
         if (id == 0) return BadRequest();
-        await db.AddAcl(new MqttAcl() {username = username, topic="#", access = Access.subscribe});
-        await db.AddAcl(new MqttAcl() {username = username, topic = $"{id}/#", access = Access.publish});
+        await db.AddAcl(new MqttAcl() {user_id = id, topic="#", access = Access.subscribe});
+        await db.AddAcl(new MqttAcl() {user_id = id, topic = $"{id}/#", access = Access.publish});
         return Ok(id.ToString());
     }
 
@@ -44,5 +45,9 @@ public class ApiController : ControllerBase {
         var id = await db.AddUser(new MqttUser() {username = username, password = password});
         if (id == 0) return BadRequest("User already exists");
         return Ok(id.ToString());
+    }
+
+    private bool PasswordIsValid(string password) {
+        return password.Length >= 8;
     }
 }
