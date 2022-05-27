@@ -1,3 +1,7 @@
 .vscode
 bin
 obj
+ClientApp/node_modules
+ClientApp/yarn.lock
+ClientApp/yarn-error.log
+ClientApp/client.js

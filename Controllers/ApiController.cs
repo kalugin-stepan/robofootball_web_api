@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
+using System.Text.Json;
 using Models;
 
 namespace Controllers;
@@ -26,7 +27,14 @@ public class ApiController : ControllerBase {
 
         if (user == null || user.password != db.GetMD5Hash(password)) return BadRequest();
 
-        return Ok(user.id.ToString());
+        return Ok(GenerateToken(user));
+    }
+
+    [HttpPost("is_token_valid")]
+    public async Task<IActionResult> IsTokenValid([FromForm] uint id, [FromForm] string token) {
+        var rez = await IsTokenValid(new Token(){id = id, token = token});
+        if (rez) return Ok();
+        return BadRequest();
     }
 
     [HttpPost("change_password")]
@@ -49,5 +57,16 @@ public class ApiController : ControllerBase {
 
     private bool PasswordIsValid(string password) {
         return password.Length >= 8;
+    }
+    private Token GenerateToken(MqttUser user) {
+        return new Token() {
+            id = user.id,
+            token = db.GetMD5Hash($"{Globals.secret}{user.id}{user.username}{user.password}")
+        };
+    }
+    private async Task<bool> IsTokenValid(Token token) {
+        var user = await db.GetUser(token.id);
+        if (user == null) return false;
+        return token.token == db.GetMD5Hash($"{Globals.secret}{user.id}{user.username}{user.password}");
     }
 }

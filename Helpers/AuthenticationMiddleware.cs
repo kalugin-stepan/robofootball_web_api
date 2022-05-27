@@ -2,10 +2,8 @@ namespace Helpers;
 
 public class AuthenticationMiddleware {
     private readonly RequestDelegate next;
-    private readonly string secret;
-    public AuthenticationMiddleware(RequestDelegate next, string secret) {
+    public AuthenticationMiddleware(RequestDelegate next) {
         this.next = next;
-        this.secret = secret;
     }
 
     public async Task Invoke(HttpContext context)
@@ -17,7 +15,7 @@ public class AuthenticationMiddleware {
             await next(context);
             return;
         }
-        context.Items["is_auth"] = this.secret == secret;
+        context.Items["is_auth"] = Globals.secret == secret;
         await next(context);
     }
 }

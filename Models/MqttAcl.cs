@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Models;
 
 public enum Access {
@@ -7,6 +9,7 @@ public enum Access {
 }
 
 public class MqttAcl {
+    [Key]
     public uint id { get; set; }
     public uint user_id { get;set; }
     public string username { get; set; } = "";
