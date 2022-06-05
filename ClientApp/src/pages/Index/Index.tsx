@@ -20,10 +20,16 @@ function get_token() {
 }
 
 function get_joystick_size(): number {
-    if (document.body.offsetWidth > document.body.offsetHeight) {
-        return document.body.offsetWidth * 0.3
+    const w = window.innerWidth
+    || document.documentElement.clientWidth
+    || document.body.clientWidth
+    const h = window.innerHeight
+    || document.documentElement.clientHeight
+    || document.body.clientHeight
+    if (w > h) {
+        return w * 0.3
     }
-    return document.body.offsetWidth * 0.8
+    return w * 0.6
 }
 
 function indexof_by_robot_name(robots: Robot[], robot_name: string) {
@@ -115,7 +121,6 @@ export default function() {
     useEffect(() => {
         client.on('message', (topic: string, data: any) => {
             const robot_name: string = data.toString('utf-8')
-            console.log(robot_name)
             const i = indexof_by_robot_name(robots, robot_name)
             if (i !== -1) {
                 robots[i].pinged = true;

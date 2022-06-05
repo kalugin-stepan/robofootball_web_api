@@ -8,4 +8,5 @@ public class MqttUser {
     public string username { get; set; } = "";
     public string password { get; set; } = "";
     public bool is_superuser { get; set; } = false;
+    public string token { get; set; } = "";
 }

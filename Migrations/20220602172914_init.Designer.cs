@@ -9,7 +9,7 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace robofootball_web_api.Migrations
 {
     [DbContext(typeof(Database))]
-    [Migration("20220526212722_init")]
+    [Migration("20220602172914_init")]
     partial class init
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -54,6 +54,10 @@ namespace robofootball_web_api.Migrations
                         .HasColumnType("tinyint(1)");
 
                     b.Property<string>("password")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("token")
                         .IsRequired()
                         .HasColumnType("longtext");
 

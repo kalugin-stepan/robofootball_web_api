@@ -55,6 +55,10 @@ namespace robofootball_web_api.Migrations
                         .IsRequired()
                         .HasColumnType("longtext");
 
+                    b.Property<string>("token")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
                     b.Property<string>("username")
                         .IsRequired()
                         .HasColumnType("longtext");

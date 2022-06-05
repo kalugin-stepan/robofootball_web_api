@@ -19,13 +19,18 @@ public class UserController : ControllerBase {
     }
 
     [HttpPost("select")]
-    public new async Task<IActionResult> User([FromForm] uint? id, [FromForm] string? username) {
+    public new async Task<IActionResult> User([FromForm] uint? id,
+    [FromForm] string? username, [FromForm] string? token) {
         if (id != null) {
-            var user = await db.GetUser(id.Value);
+            var user = await db.GetUserById(id.Value);
             return Ok(user);
         }
         if (username != null) {
-            var user = await db.GetUser(username);
+            var user = await db.GetUserByUsername(username);
+            return Ok(user);
+        }
+        if (token != null) {
+            var user = await db.GetUserByToken(token);
             return Ok(user);
         }
         return BadRequest();

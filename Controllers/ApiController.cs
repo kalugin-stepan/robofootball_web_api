@@ -23,11 +23,20 @@ public class ApiController : ControllerBase {
 
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromForm] string username, [FromForm] string password) {
-        var user = await db.GetUser(username);
+        var user = await db.GetUserByUsername(username);
 
         if (user == null || user.password != db.GetMD5Hash(password)) return BadRequest();
 
-        return Ok(GenerateToken(user));
+        return Ok(await GenerateToken(user));
+    }
+
+    [HttpPost("logout")]
+    public async Task<IActionResult> Logout([FromForm] uint id, [FromForm] string token) {
+        var user = await db.GetUserById(id);
+        if (user == null || user.token != token) return BadRequest();
+        user.token = "";
+        await db.UpdateUser(user);
+        return Ok();
     }
 
     [HttpPost("is_token_valid")]
@@ -40,7 +49,7 @@ public class ApiController : ControllerBase {
     [HttpPost("change_password")]
     public async Task<IActionResult> ChangePassword([FromForm] string username,
     [FromForm] string old_password, [FromForm] string new_password) {
-        var user = await db.GetUser(username);
+        var user = await db.GetUserByUsername(username);
         if (user == null) return BadRequest();
         if (user.password != db.GetMD5Hash(old_password)) return BadRequest();
         user.password = db.GetMD5Hash(new_password);
@@ -58,15 +67,28 @@ public class ApiController : ControllerBase {
     private bool PasswordIsValid(string password) {
         return password.Length >= 8;
     }
-    private Token GenerateToken(MqttUser user) {
-        return new Token() {
+    private async Task<Token> GenerateToken(MqttUser user) {
+        var token_string = GenerateTokenString(36);
+        var token = new Token() {
             id = user.id,
-            token = db.GetMD5Hash($"{Globals.secret}{user.id}{user.username}{user.password}")
+            token = token_string
         };
+        user.token = token_string;
+        await db.UpdateUser(user);
+        return token;
     }
     private async Task<bool> IsTokenValid(Token token) {
-        var user = await db.GetUser(token.id);
+        if (token.token == "") return false;
+        var user = await db.GetUserById(token.id);
         if (user == null) return false;
-        return token.token == db.GetMD5Hash($"{Globals.secret}{user.id}{user.username}{user.password}");
+        return token.token == user.token;
+    }
+    private string GenerateTokenString(int len) {
+        var rand = new Random();
+        char[] token = new char[len];
+        for (int i = 0; i < len; i++) {
+            token[i] = (char)rand.Next(48, 122);
+        }
+        return new string(token);
     }
 }

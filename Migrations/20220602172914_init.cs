@@ -41,7 +41,9 @@ namespace robofootball_web_api.Migrations
                         .Annotation("MySql:CharSet", "utf8mb4"),
                     password = table.Column<string>(type: "longtext", nullable: false)
                         .Annotation("MySql:CharSet", "utf8mb4"),
-                    is_superuser = table.Column<bool>(type: "tinyint(1)", nullable: false)
+                    is_superuser = table.Column<bool>(type: "tinyint(1)", nullable: false),
+                    token = table.Column<string>(type: "longtext", nullable: false)
+                        .Annotation("MySql:CharSet", "utf8mb4")
                 },
                 constraints: table =>
                 {

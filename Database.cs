@@ -19,12 +19,16 @@ public class Database: DbContext {
         return await users.ToListAsync();
     }
 
-    public async Task<MqttUser?> GetUser(uint id) {
+    public async Task<MqttUser?> GetUserById(uint id) {
         return await users.Where(user => user.id == id).FirstOrDefaultAsync();
     }
 
-    public async Task<MqttUser?> GetUser(string username) {
+    public async Task<MqttUser?> GetUserByUsername(string username) {
         return await users.Where(user => user.username == username).FirstOrDefaultAsync();
+    }
+
+    public async Task<MqttUser?> GetUserByToken(string token) {
+        return await users.Where(user => user.token == token).FirstOrDefaultAsync();
     }
 
     public async Task<uint> AddUser(MqttUser user) {
