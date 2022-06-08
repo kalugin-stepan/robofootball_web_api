@@ -40,7 +40,7 @@ def on_connect(client, userdata, flags, rc):
         print('connected')
         connected = True
         return
-    print('error')
+    print('not connected')
 
 if __name__ == '__main__':
     data = login(username, password)

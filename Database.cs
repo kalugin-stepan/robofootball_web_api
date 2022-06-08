@@ -32,6 +32,7 @@ public class Database: DbContext {
     }
 
     public async Task<uint> AddUser(MqttUser user) {
+        if (GetAclByUsername(user.username) != null) return 0;
         user.password = GetMD5Hash(user.password);
         var rez = await users.AddAsync(user);
         await SaveChangesAsync();
