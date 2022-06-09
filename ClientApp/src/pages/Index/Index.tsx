@@ -6,7 +6,7 @@ import Vector from './Vector'
 import { IsLoggedIn } from '../../Auth'
 import config from '../../config.json'
 import { IJoystickUpdateEvent } from 'react-joystick-component/build/lib/Joystick'
-declare const mqtt: any
+import * as mqtt from 'mqtt/dist/mqtt.min'
 
 function get_user_id(): number {
     const data = localStorage.getItem('id')
@@ -80,9 +80,10 @@ export default function() {
         const id = get_user_id()
         const token = get_token()
 
-        if (id === 0 || token === null) redirect()
-
-        if (id === 0) redirect()
+        if (id === 0 || token === null) {
+            redirect()
+            return
+        }
 
         try {
             client = mqtt.connect(config.mqtt_url,
