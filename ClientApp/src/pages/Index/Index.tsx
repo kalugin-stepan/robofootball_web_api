@@ -39,7 +39,7 @@ function indexof_by_robot_name(robots: Robot[], robot_name: string) {
     return -1
 }
 
-let client: any = null
+let client: mqtt.MqttClient | null = null
 
 let current_direction: Vector = {x: 0, y: 0}
 
@@ -91,11 +91,11 @@ export default function() {
         } catch {
             redirect()
         }
-        client.on('error', redirect)
-        client.on('disconnect', redirect)
-        client.on('end', redirect)
-        client.on('close', redirect)
-        client.subscribe(id.toString())
+        client?.on('error', redirect)
+        client?.on('disconnect', redirect)
+        client?.on('end', redirect)
+        client?.on('close', redirect)
+        client?.subscribe(id.toString())
 
         return () => {
             mqtt_clear(client)
@@ -111,7 +111,7 @@ export default function() {
 
         const send_pos_interval = setInterval(() => {
             if (current_direction === last_direction) return
-            client.publish(topic, JSON.stringify(current_direction))
+            client?.publish(topic, JSON.stringify(current_direction))
             last_direction = current_direction
         }, 100)
         return () => {
@@ -120,7 +120,8 @@ export default function() {
     }, [selectedRobotName])
 
     useEffect(() => {
-        client.on('message', (topic: string, data: any) => {
+        client
+        client?.on('message', (topic, data: any) => {
             const robot_name: string = data.toString('utf-8')
             const i = indexof_by_robot_name(robots, robot_name)
             if (i !== -1) {
