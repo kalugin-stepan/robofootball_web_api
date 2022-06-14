@@ -32,7 +32,7 @@ public class Database: DbContext {
     }
 
     public async Task<uint> AddUser(MqttUser user) {
-        if (GetAclByUsername(user.username) != null) return 0;
+        if (await GetUserByUsername(user.username) != null) return 0;
         user.password = GetMD5Hash(user.password);
         var rez = await users.AddAsync(user);
         await SaveChangesAsync();
@@ -43,7 +43,7 @@ public class Database: DbContext {
         var user = users.Where(user => user.id == id).FirstOrDefault();
         if (user == null) return;
         users.Remove(user);
-        await DeleteAclByUserId(id);
+        await DeleteAclsByUserId(id);
         await SaveChangesAsync();
     }
 
@@ -51,7 +51,7 @@ public class Database: DbContext {
         var user = users.Where(user => user.username == username).FirstOrDefault();
         if (user == null) return;
         users.Remove(user);
-        await DeleteAclByUsername(username);
+        await DeleteAclsByUsername(username);
         await SaveChangesAsync();
     }
 
@@ -68,16 +68,16 @@ public class Database: DbContext {
         return await acls.Where(acl => acl.id == id).FirstOrDefaultAsync();
     }
 
-    public async Task<MqttAcl?> GetAclByUserId(uint user_id) {
-        return await acls.Where(acl => acl.user_id == user_id).FirstOrDefaultAsync();
+    public async Task<ICollection<MqttAcl>> GetAclsByUserId(uint user_id) {
+        return await acls.Where(acl => acl.user_id == user_id).ToListAsync();
     }
 
-    public async Task<MqttAcl?> GetAclByUsername(string username) {
-        return await acls.Where(acl => acl.username == username).FirstOrDefaultAsync();
+    public async Task<ICollection<MqttAcl>> GetAclsByUsername(string username) {
+        return await acls.Where(acl => acl.username == username).ToListAsync();
     }
 
-    public async Task<MqttAcl?> GetAclByTopic(string topic) {
-        return await acls.Where(acl => acl.topic == topic).FirstOrDefaultAsync();
+    public async Task<ICollection<MqttAcl>> GetAclsByTopic(string topic) {
+        return await acls.Where(acl => acl.topic == topic).ToListAsync();
     }
 
     public async Task<bool> AddAcl(MqttAcl acl) {
@@ -93,24 +93,18 @@ public class Database: DbContext {
         await SaveChangesAsync();
     }
 
-    public async Task DeleteAclByUserId(uint user_id) {
-        var acl = await acls.Where(acl => acl.user_id == user_id).FirstOrDefaultAsync();
-        if (acl == null) return;
-        acls.Remove(acl);
+    public async Task DeleteAclsByUserId(uint user_id) {
+        await acls.Where(acl => acl.user_id == user_id).ForEachAsync(acl => acls.Remove(acl));
         await SaveChangesAsync();
     }
 
-    public async Task DeleteAclByUsername(string username) {
-        var acl = await acls.Where(acl => acl.username == username).FirstOrDefaultAsync();
-        if (acl == null) return;
-        acls.Remove(acl);
+    public async Task DeleteAclsByUsername(string username) {
+        await acls.Where(acl => acl.username == username).ForEachAsync(acl => acls.Remove(acl));
         await SaveChangesAsync();
     }
 
-    public async Task DeleteAclByTopic(string topic) {
-        var acl = await acls.Where(acl => acl.topic == topic).FirstOrDefaultAsync();
-        if (acl == null) return;
-        acls.Remove(acl);
+    public async Task DeleteAclsByTopic(string topic) {
+        await acls.Where(acl => acl.topic == topic).ForEachAsync(acl => acls.Remove(acl));
         await SaveChangesAsync();
     }
 
@@ -121,5 +115,11 @@ public class Database: DbContext {
 
     public string GetMD5Hash(string data) {
         return Convert.ToHexString(md5.ComputeHash(Encoding.UTF8.GetBytes(data)));
+    }
+    public async Task<bool> IsTokenValid(Token token) {
+        if (token.token == "") return false;
+        var user = await GetUserById(token.id);
+        if (user == null) return false;
+        return token.token == user.token;
     }
 }
