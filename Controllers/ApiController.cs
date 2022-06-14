@@ -1,5 +1,4 @@
 using Microsoft.AspNetCore.Mvc;
-using System.Text.Json;
 using Models;
 
 namespace Controllers;
@@ -13,6 +12,10 @@ public class ApiController : ControllerBase {
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromForm] string username, [FromForm] string password) {
+        try {
+            int.Parse(username);
+            return BadRequest();
+        } catch {}
         if (!PasswordIsValid(password)) return BadRequest();
         var id = await db.AddUser(new MqttUser() {username = username, password = password});
         if (id == 0) return BadRequest();
@@ -25,9 +28,7 @@ public class ApiController : ControllerBase {
     [HttpPost("login")]
     public async Task<IActionResult> Login([FromForm] string username, [FromForm] string password) {
         var user = await db.GetUserByUsername(username);
-
         if (user == null || user.password != db.GetMD5Hash(password)) return BadRequest();
-
         return Ok(await GenerateToken(user));
     }
 
@@ -66,12 +67,7 @@ public class ApiController : ControllerBase {
     }
 
     private bool PasswordIsValid(string password) {
-        try {
-            int.Parse(password);
-            return false;
-        } catch {
-            return password.Length >= 8;
-        }
+        return password.Length >= 8;
     }
     private string GenerateTokenString(int len) {
         var rand = new Random();
