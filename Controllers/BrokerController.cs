@@ -29,7 +29,7 @@ public class BrokerController: ControllerBase {
             var id = uint.Parse(username);
             var acls = await db.GetAclsByUserId(id);
             foreach (var acl in acls) {
-                if (acl.access >= access && TopicMatch(acl.topic, topic)) {
+                if ((acl.access == access || acl.access == Access.pubsub) && TopicMatch(acl.topic, topic)) {
                     return Ok();
                 }
             }
@@ -37,14 +37,21 @@ public class BrokerController: ControllerBase {
         } catch {
             var user = await db.GetUserByUsername(username);
             if (user == null) return BadRequest();
-            if (access >= Access.publish && topic == user.id.ToString()) {
+            if (access == Access.publish && topic == user.id.ToString()) {
                 return Ok();
             }
-            if (access > Access.subscribe) {
+            if (access == Access.publish) {
                 return BadRequest();
             }
             return Ok();
         }
+    }
+
+    [HttpPost("is_superuser")]
+    public async Task<IActionResult> IsSuperUser([FromForm] string username) {
+        var user = await db.GetUserByUsername(username);
+        if (user == null || !user.is_superuser) return BadRequest();
+        return Ok();
     }
 
     public bool TopicMatch(string allowedTopic, string topic) {
