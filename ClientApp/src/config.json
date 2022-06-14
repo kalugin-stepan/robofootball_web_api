@@ -1,4 +1,4 @@
 {
-    "api_url": "http://localhost:5213/api",
-    "mqtt_url": "ws://broker.emqx.io:8083/mqtt"
+    "api_url": "https://test-api.rfbl.ru/api",
+    "mqtt_url": "ws://test-api.rfbl.ru:8083/mqtt"
 }

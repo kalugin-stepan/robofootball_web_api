@@ -43,12 +43,12 @@ let client: mqtt.MqttClient | null = null
 
 let current_direction: Vector = {x: 0, y: 0}
 
-function mqtt_clear(client: any) {
-    client.removeAllListeners('message')
-    client.removeAllListeners('error')
-    client.removeAllListeners('disconnect')
-    client.removeAllListeners('end')
-    client.removeAllListeners('close')
+function mqtt_clear(client: mqtt.MqttClient | null) {
+    client?.removeAllListeners('message')
+    client?.removeAllListeners('error')
+    client?.removeAllListeners('disconnect')
+    client?.removeAllListeners('end')
+    client?.removeAllListeners('close')
 }
 
 export default function() {
@@ -120,8 +120,7 @@ export default function() {
     }, [selectedRobotName])
 
     useEffect(() => {
-        client
-        client?.on('message', (topic, data: any) => {
+        client?.on('message', (topic, data) => {
             const robot_name: string = data.toString('utf-8')
             const i = indexof_by_robot_name(robots, robot_name)
             if (i !== -1) {

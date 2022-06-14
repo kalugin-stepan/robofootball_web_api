@@ -17,6 +17,7 @@ public class ApiController : ControllerBase {
         var id = await db.AddUser(new MqttUser() {username = username, password = password});
         if (id == 0) return BadRequest();
         await db.AddAcl(new MqttAcl() {user_id = id, topic="#", access = Access.subscribe});
+        await db.AddAcl(new MqttAcl() {user_id = id, topic=id.ToString(), access = Access.publish});
         await db.AddAcl(new MqttAcl() {user_id = id, topic = $"{id}/#", access = Access.publish});
         return Ok(id.ToString());
     }
@@ -41,7 +42,7 @@ public class ApiController : ControllerBase {
 
     [HttpPost("is_token_valid")]
     public async Task<IActionResult> IsTokenValid([FromForm] uint id, [FromForm] string token) {
-        var rez = await IsTokenValid(new Token(){id = id, token = token});
+        var rez = await db.IsTokenValid(new Token(){id = id, token = token});
         if (rez) return Ok();
         return BadRequest();
     }
@@ -65,23 +66,12 @@ public class ApiController : ControllerBase {
     }
 
     private bool PasswordIsValid(string password) {
-        return password.Length >= 8;
-    }
-    private async Task<Token> GenerateToken(MqttUser user) {
-        var token_string = GenerateTokenString(36);
-        var token = new Token() {
-            id = user.id,
-            token = token_string
-        };
-        user.token = token_string;
-        await db.UpdateUser(user);
-        return token;
-    }
-    private async Task<bool> IsTokenValid(Token token) {
-        if (token.token == "") return false;
-        var user = await db.GetUserById(token.id);
-        if (user == null) return false;
-        return token.token == user.token;
+        try {
+            int.Parse(password);
+            return false;
+        } catch {
+            return password.Length >= 8;
+        }
     }
     private string GenerateTokenString(int len) {
         var rand = new Random();
@@ -90,5 +80,16 @@ public class ApiController : ControllerBase {
             token[i] = (char)rand.Next(48, 122);
         }
         return new string(token);
+    }
+
+    public async Task<Token> GenerateToken(MqttUser user) {
+        var token_string = GenerateTokenString(36);
+        var token = new Token() {
+            id = user.id,
+            token = token_string
+        };
+        user.token = token_string;
+        await db.UpdateUser(user);
+        return token;
     }
 }

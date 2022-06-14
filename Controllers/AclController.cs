@@ -25,13 +25,13 @@ public class AclController : ControllerBase {
             return Ok(await db.GetAclById(id.Value));
         }
         if (user_id != null) {
-            return Ok(await db.GetAclByUserId(user_id.Value));
+            return Ok(await db.GetAclsByUserId(user_id.Value));
         }
         if (username != null) {
-            return Ok(await db.GetAclByUsername(username));
+            return Ok(await db.GetAclsByUsername(username));
         }
         if (topic != null) {
-            return Ok(await db.GetAclByTopic(topic));
+            return Ok(await db.GetAclsByTopic(topic));
         }
         return BadRequest();
     }
@@ -52,15 +52,15 @@ public class AclController : ControllerBase {
             return Ok();
         }
         if (user_id != null) {
-            await db.DeleteAclByUserId(user_id.Value);
+            await db.DeleteAclsByUserId(user_id.Value);
             return Ok();
         }
         if (username != null) {
-            await db.DeleteAclByUsername(username);
+            await db.DeleteAclsByUsername(username);
             return Ok();
         }
         if (topic != null) {
-            await db.DeleteAclByTopic(topic);
+            await db.DeleteAclsByTopic(topic);
         }
         return BadRequest();
     }
