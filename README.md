@@ -4,7 +4,7 @@
 
 ### Установка .NET Core
 
-`https://docs.microsoft.com/ru-ru/dotnet/core/install`
+[https://docs.microsoft.com/ru-ru/dotnet/core/install](https://docs.microsoft.com/ru-ru/dotnet/core/install)
 
 ### Клонирование
 
@@ -19,7 +19,7 @@
 вписываем в него сроку подключения к MySQL, и изменяем поле `secret`,
 вписываем в него секрет, ограничивающий досту к командам сервера.
 
-### сборка
+### Cборка
 
 ```bash
     dotnet tool install --global dotnet-ef
