@@ -12,11 +12,7 @@ public class ApiController : ControllerBase {
 
     [HttpPost("register")]
     public async Task<IActionResult> Register([FromForm] string username, [FromForm] string password) {
-        try {
-            int.Parse(username);
-            return BadRequest();
-        } catch {}
-        if (!PasswordIsValid(password)) return BadRequest();
+        if (!UsernameIsValid(username) || !PasswordIsValid(password)) return BadRequest();
         var id = await db.AddUser(new MqttUser() {username = username, password = password});
         if (id == 0) return BadRequest();
         await db.AddAcl(new MqttAcl() {user_id = id, topic="#", access = Access.subscribe});
@@ -66,9 +62,20 @@ public class ApiController : ControllerBase {
         return Ok(id.ToString());
     }
 
+    private bool UsernameIsValid(string username) {
+        if (string.IsNullOrEmpty(username)) return false;
+        try {
+            int.Parse(username);
+            return false;
+        } catch {
+            return true;
+        }
+    }
+
     private bool PasswordIsValid(string password) {
         return password.Length >= 8;
     }
+
     private string GenerateTokenString(int len) {
         var rand = new Random();
         char[] token = new char[len];
