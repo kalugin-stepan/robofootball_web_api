@@ -2,24 +2,28 @@ using Microsoft.AspNetCore.Mvc;
 using Models;
 
 [Route("[controller]")]
-public class BrokerController: ControllerBase {
+public class MqttController: ControllerBase {
     private readonly Database db;
-    public BrokerController(Database db) {
+    public MqttController(Database db) {
         this.db = db;
     }
 
     [HttpPost("is_logged_in")]
     public async Task<IActionResult> IsLoggedIn([FromForm] string username, [FromForm] string password) {
-        MqttUser? user;
-        try {
-            var id = uint.Parse(username);
-            user = await db.GetUserById(id);
-            if (user == null || user.token != password) return BadRequest();
-            return Ok();
-        } catch {
-            user = await db.GetUserByUsername(username);
+        if (username[0] == '~') {
+            username = username.Substring(1);
+            var user = await db.GetUserByUsername(username);
             if (user == null || user.password != db.GetMD5Hash(password)) return BadRequest();
             return Ok();
+        }
+        try {
+            var id = uint.Parse(username);
+            var user = await db.GetUserById(id);
+            if (user == null || user.token != password) return BadRequest();
+            return Ok();
+        }
+        catch {
+            return BadRequest();
         }
     }
 
