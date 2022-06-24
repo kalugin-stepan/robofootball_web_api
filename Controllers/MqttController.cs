@@ -29,16 +29,8 @@ public class MqttController: ControllerBase {
 
     [HttpPost("has_access")]
     public async Task<IActionResult> HasAccess([FromForm] string username, [FromForm] string topic, [FromForm] Access access) {
-        try {
-            var id = uint.Parse(username);
-            var acls = await db.GetAclsByUserId(id);
-            foreach (var acl in acls) {
-                if ((acl.access == access || acl.access == Access.pubsub) && TopicMatch(acl.topic, topic)) {
-                    return Ok();
-                }
-            }
-            return BadRequest();
-        } catch {
+        if (username[0] == '~') {
+            username = username.Substring(1);
             var user = await db.GetUserByUsername(username);
             if (user == null) return BadRequest();
             if (access == Access.publish && topic == user.id.ToString()) {
@@ -48,6 +40,21 @@ public class MqttController: ControllerBase {
                 return BadRequest();
             }
             return Ok();
+        }
+        try {
+            var id = uint.Parse(username);
+            if (access == Access.subscribe) {
+                return Ok();
+            }
+            var acls = await db.GetAclsByUserId(id);
+            foreach (var acl in acls) {
+                if ((acl.access == access || acl.access == Access.pubsub) && TopicMatch(acl.topic, topic)) {
+                    return Ok();
+                }
+            }
+            return BadRequest();
+        } catch {
+            return BadRequest();
         }
     }
 
